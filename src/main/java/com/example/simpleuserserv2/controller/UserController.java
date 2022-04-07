@@ -1,20 +1,21 @@
 package com.example.simpleuserserv2.controller;
 
+import com.example.simpleuserserv2.exception.ServiceException;
 import com.example.simpleuserserv2.resource.User;
 import com.example.simpleuserserv2.resource.UserCollection;
 import com.example.simpleuserserv2.service.UserService;
-import com.fasterxml.jackson.databind.JsonNode;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/v1/account")
 public class UserController {
@@ -33,6 +34,7 @@ public class UserController {
     @PostMapping("/users")
     @ResponseStatus(code = HttpStatus.CREATED)
     public User create(@RequestBody User user) {
+        log.info("User: {}", user);
         return userService.createUser(user);
     }
 
@@ -47,17 +49,21 @@ public class UserController {
     @PutMapping("/users/{id}")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
     public void updateUser(@PathVariable("id") Long id, @RequestBody User user) {
-        userService.updateUser(id, user);
+        userService.patchUser(id, user);
     }
 
 
-    @PatchMapping("/users/{id}")
+    @PatchMapping(path = "/users/{id}", consumes = "application/json-patch+json")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public ResponseEntity patch(@PathVariable("id") Long id, @RequestBody JsonNode patchJson) {
+    public void patchUser(@PathVariable("id") Long id, @RequestBody JsonPatch jsonPatch) {
+
         // Refer: http://jsonpatch.com/
         // https://github.com/java-json-tools/json-patch
-        throw new UnsupportedOperationException();
-
+        try {
+            userService.patchUser(id, jsonPatch);
+        } catch (JsonPatchException | JsonProcessingException e) {
+            throw new ServiceException("Unable to process", HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/users/{id}")

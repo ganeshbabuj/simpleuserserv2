@@ -4,11 +4,17 @@ import com.example.simpleuserserv2.entity.UserEntity;
 import com.example.simpleuserserv2.exception.NotFoundException;
 import com.example.simpleuserserv2.resource.User;
 import com.example.simpleuserserv2.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,8 +27,10 @@ import java.util.stream.Collectors;
 @Scope("singleton") // Not mandatory
 public class UserServiceImpl implements UserService {
 
-
     AtomicLong userCounter = new AtomicLong(101L);
+
+    @Autowired
+    private Jackson2ObjectMapperBuilder mapperBuilder;
 
     // Setter injection just for example
     @Autowired
@@ -74,17 +82,42 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(long id, User user) {
+    public void patchUser(long id, User user) {
 
         UserEntity existingUserEntity = userEntityMap.get(id);
 
         if (Objects.isNull(existingUserEntity)) {
             throw new NotFoundException("User Not Found");
         }
+        // Advantage of modelMapper
+        //UserEntity userEntity = new UserEntity();
+        //userEntity.setFirstName(user.getFirstName());
         UserEntity userEntity = modelMapper.map(user, UserEntity.class);
         //FORCE
         userEntity.setId(id);
         userEntityMap.put(id, userEntity);
+
+
+    }
+
+    @Override
+    public void patchUser(long id, JsonPatch jsonPatch) throws JsonPatchException, JsonProcessingException {
+
+        UserEntity existingUserEntity = userEntityMap.get(id);
+
+        if (Objects.isNull(existingUserEntity)) {
+            throw new NotFoundException("User Not Found");
+        }
+
+
+            ObjectMapper objectMapper = mapperBuilder.build();
+            JsonNode jsonNode = objectMapper.convertValue(existingUserEntity, JsonNode.class);
+            JsonNode patchedUserNode = jsonPatch.apply(jsonNode);
+            UserEntity patchedUserEntity = objectMapper.treeToValue(patchedUserNode, UserEntity.class);
+
+            //FORCE
+            patchedUserEntity.setId(id);
+            userEntityMap.put(id, patchedUserEntity);
 
 
     }

@@ -24,6 +24,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.github.java-json-tools</groupId>
+			<artifactId>json-patch</artifactId>
+			<version>1.13</version>
+		</dependency>
+
+		<dependency>
 			<!-- Model Mapper -->
 			<groupId>org.modelmapper</groupId>
 			<artifactId>modelmapper</artifactId>

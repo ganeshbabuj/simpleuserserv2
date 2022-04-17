@@ -51,6 +51,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createUser(User user) {
+
         UserEntity userEntity = modelMapper.map(user, UserEntity.class);
         Long id = userCounter.incrementAndGet();
         userEntity.setId(id);
@@ -82,7 +83,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void patchUser(long id, User user) {
+    public void updateUser(long id, User user) {
 
         UserEntity existingUserEntity = userEntityMap.get(id);
 
@@ -110,14 +111,14 @@ public class UserServiceImpl implements UserService {
         }
 
 
-            ObjectMapper objectMapper = mapperBuilder.build();
-            JsonNode jsonNode = objectMapper.convertValue(existingUserEntity, JsonNode.class);
-            JsonNode patchedUserNode = jsonPatch.apply(jsonNode);
-            UserEntity patchedUserEntity = objectMapper.treeToValue(patchedUserNode, UserEntity.class);
+        ObjectMapper objectMapper = mapperBuilder.build();
+        JsonNode jsonNode = objectMapper.convertValue(existingUserEntity, JsonNode.class);
+        JsonNode patchedUserNode = jsonPatch.apply(jsonNode);
+        UserEntity patchedUserEntity = objectMapper.treeToValue(patchedUserNode, UserEntity.class);
 
-            //FORCE
-            patchedUserEntity.setId(id);
-            userEntityMap.put(id, patchedUserEntity);
+        //FORCE
+        patchedUserEntity.setId(id);
+        userEntityMap.put(id, patchedUserEntity);
 
 
     }

@@ -1,5 +1,6 @@
 package com.example.simpleuserserv2.controller;
 
+import com.example.simpleuserserv2.exception.NotFoundException;
 import com.example.simpleuserserv2.exception.ServiceException;
 import com.example.simpleuserserv2.resource.User;
 import com.example.simpleuserserv2.resource.UserCollection;
@@ -40,8 +41,18 @@ public class UserController {
 
 
     @GetMapping("/users/{id}")
-    @ResponseStatus(code = HttpStatus.OK)
+   // @ResponseStatus(code = HttpStatus.OK)
     public User read(@PathVariable("id") Long id) {
+        /*
+        try {
+            User user = userService.getUser(id);
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        } catch (NotFoundException notFoundException) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+         */
+
         return userService.getUser(id);
     }
 
@@ -49,7 +60,7 @@ public class UserController {
     @PutMapping("/users/{id}")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
     public void updateUser(@PathVariable("id") Long id, @RequestBody User user) {
-        userService.patchUser(id, user);
+        userService.updateUser(id, user);
     }
 
 

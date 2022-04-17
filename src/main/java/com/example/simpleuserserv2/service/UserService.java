@@ -14,7 +14,7 @@ public interface UserService {
 
     User createUser(User user);
     User getUser(long id);
-    void patchUser(long id, User User);
+    void updateUser(long id, User User);
     void patchUser(long id, JsonPatch jsonPatch) throws JsonPatchException, JsonProcessingException;
     List<User> findUsers(Optional<String> username);
 
